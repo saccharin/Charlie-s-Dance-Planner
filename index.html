@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Charlie&apos;s Wedding Song App</title>
+
+	<!-- Bootstrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+	
+	<!-- React -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.js"></script>
+	
+	<!-- Babel -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+	
+	<!-- Code -->
+	<script type="text/babel">
+	
+
+	class DanceMove
+	{
+		constructor(params) {
+			params = params || {};
+			this.youtubeUrl = params.youtubeUrl || '';
+			this.startTime = params.startTime || 0;
+			this.endTime = params.endTime || 999;
+			this.gif = params.gif || '';
+			this.notes = params.notes || '';
+		}
+
+		extractId() {
+			// http://stackoverflow.com/a/5831191/1451957
+		    var re = /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig;
+		    var matches = re.exec(this.youtubeUrl);
+		    if(matches[1])
+		    	return matches[1];
+		    
+		    return null;
+		}
+
+		getUrl() {
+			var id = this.extractId();
+			if(id == null)
+				return null;
+
+			var url = 'http://www.youtube.com/embed/' + id;
+			url += '?autoplay=0'
+			url += '&start=' + this.startTime.toString();
+			url += '&end=' + this.endTime.toString();
+
+			return url;
+		}
+	}
+
+	var moves = [{
+		youtubeUrl : 'https://www.youtube.com/watch?v=9bZkp7q19f0',
+		startTime : 4,
+		endTime : 19,
+		gif : 'https://media.giphy.com/media/fmyDkGUCFJUju/giphy.gif'
+	}, {
+		youtubeUrl : 'https://www.youtube.com/watch?v=g_kdnYOEHIA',
+		startTime : 26,
+		endTime : 39,
+		gif : 'https://media.giphy.com/media/l3vR9Z6rJMSKDmGsg/giphy.gif',
+		notes: 'Everyone should just freeze'
+	}, {
+		youtubeUrl : 'https://www.youtube.com/watch?v=kffacxfA7G4',
+		startTime : 14,
+		endTime : 28,
+		gif : 'https://s-media-cache-ak0.pinimg.com/originals/0e/11/93/0e119355baf5576002ed6ead43886f26.gif'
+	}].map((m) => new DanceMove(m));
+
+	class Move extends React.Component {
+		render() {
+			var maxWidth = 360;
+			var maxHeight = 200;
+
+			var url = this.props.danceMove.getUrl();
+			url += '&origin=http://waful.net';
+			var cls = 'row';
+			if(this.props.nth % 2 > 0)
+				cls += ' bg-info';
+			return (
+				<div className={cls}>
+					<div className="col-md-1 text-center">
+						<h3>{this.props.nth + 1}</h3>
+					</div>
+					<div className="col-md-4 text-center">
+						<iframe type="text/html" height={maxHeight} width={maxWidth} src={url} frameBorder="0"></iframe>
+					</div>
+					<div className="col-md-4 text-center">
+						<img src={this.props.danceMove.gif} style={{maxHeight: maxHeight + "px", maxWidth: maxWidth + "px"}} />
+					</div>
+					<div className="col-md-3">
+						<p>{this.props.danceMove.notes}</p>
+					</div>
+				</div>
+				);
+		}
+	};
+
+
+	class Moves extends React.Component {
+		render() {
+			var rows = [];
+
+			this.props.moves.forEach((m,i) => {
+				rows.push(<Move key={i} danceMove={m} nth={i} />);
+			});
+			return (
+				<div>
+					<div className="row">
+						<div className="col-md-1 text-center">
+							<h4>Move #</h4>
+						</div>
+						<div className="col-md-4 text-center">
+							<h4>Music</h4>
+						</div>
+						<div className="col-md-4 text-center">
+							<h4>Dance Move</h4>
+						</div>
+						<div className="col-md-3 text-center">
+							<h4>Notes</h4>
+						</div>
+					</div>
+					{rows}
+				</div>
+				);
+		}
+	};
+
+
+
+	$(document).ready(function() {
+		ReactDOM.render(
+			<Moves moves={moves} />,
+			document.getElementById('moves')
+			);
+		// ReactDOM.render(
+		// 	<Player moves={moves} />,
+		// 	document.getElementById('player')
+		// 	);
+	});
+	</script>
+
+  </head>
+  <body>
+  	<nav class="navbar navbar-default">
+	  <div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="index.html">
+				<!--<span><img src="imgs/logo.png" height="18px" /></span>-->
+				<span class="glyphicon glyphicon-thumbs-up" id="logIcon"></span>
+				Charlie&apos;s Dance Planner
+			</a>
+    	</div>
+	  </div>
+	</nav>
+	<div class="container">
+		<div id="moves"></div>
+		<!--
+		<div>
+			<div className="row">
+				<div className="col-md-6">
+					<iframe ref="yt" id="yt"
+				        width="640" height="360"
+				        src=""
+				        frameBorder="0"
+					></iframe>
+				</div>
+				<div className="col-md-6">
+					<img id="img" src="" />
+				</div>
+			</div>
+			<div className="row">
+				controls go here lol
+			</div>
+		</div>
+		-->
+	</div>
+	<script>
+/*
+
+	  // Load the IFrame Player API code asynchronously.
+	  var tag = document.createElement('script');
+	  tag.src = "https://www.youtube.com/player_api";
+	  var firstScriptTag = document.getElementsByTagName('script')[0];
+	  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+	var player;
+	var currentIndex = -1;
+
+
+	function loadNextVideo() {
+		currentIndex++;
+		var next = this.getCurrentVideo();
+		// this.player.loadVideoById({ 
+		// 	videoId: next.extractId(), 
+		// 	startSeconds: next.startTime,
+		//  endSeconds: next.endTime
+		// });
+		document.getElementById('img').src = next.gif;
+		console.log("Loading next video");
+	}
+
+	function onPlayerStateChange(status) {
+		switch(status) 
+		{
+			// stopped
+			case 0:
+				loadNextVideo();
+				break;
+			
+			default:
+				// do nothing
+				break;
+		}
+	}
+
+	function getCurrentVideo() {
+		return moves[currentIndex];
+	}
+  	function onYouTubeIframeAPIReady() {
+		player = new YT.Player('yt', {
+		    events: {
+		      'onStateChange': onPlayerStateChange
+		    }
+		});
+		loadNextVideo();
+	}
+	*/
+	</script>
+  </body>
+</html>
